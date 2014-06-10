@@ -37,7 +37,7 @@ void vh_i2cDelayMicroSeconds(uint32 ms) {
 	}
 }
 
-void i2c_vh_init(const gioPin_t *scl, const gioPin_t *sda) {
+void i2c_init(const gioPin_t *scl, const gioPin_t *sda) {
 
 	int i = 0;
 	// two variables that will keep the pin assignment all the time

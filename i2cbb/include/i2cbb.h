@@ -10,7 +10,7 @@
 
 #include "gioutils.h"
 
-void i2c_vh_init(const gioPin_t *scl, const gioPin_t *sda);
+void i2c_init(const gioPin_t *scl, const gioPin_t *sda);
 void i2c_start();
 void i2c_stop();
 void i2c_putByte(uint8 byte);
