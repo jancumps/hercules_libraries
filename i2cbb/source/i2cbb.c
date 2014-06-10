@@ -23,8 +23,8 @@ const gioPin_t * _vh_sda = NULL;
 
 // #define _i2c_wait 1 // 140 kHz
 // #define _i2c_wait 25
-//#define _i2c_wait 2 // 105 kHz
-#define _i2c_wait 4 // 68 kHz
+#define _i2c_wait 2 // 105 kHz
+// #define _i2c_wait 4 // 68 kHz
 
 
 /**
