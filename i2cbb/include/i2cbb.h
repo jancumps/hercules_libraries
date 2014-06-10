@@ -10,12 +10,12 @@
 
 #include "gioutils.h"
 
-void i2c_init(const gioPin_t *scl, const gioPin_t *sda);
-void i2c_start_cond();
-void i2c_stop_cond();
-void i2c_write_bit(uint32 bit);
-uint32 i2c_read_bit();
-uint32 i2c_write_byte(uint32 send_start, uint32 send_stop, unsigned char byte);
-unsigned char i2c_read_byte(uint32 nack, uint32 send_stop);
+void i2c_vh_init(const gioPin_t *scl, const gioPin_t *sda);
+void i2c_start();
+void i2c_stop();
+void i2c_putByte(uint8 byte);
+uint8 i2c_getByte();
+void i2c_read(uint8 address, uint8 *buffer, uint32 count, uint32 callStart, uint32 callStop);
+void i2c_write(uint8 address, uint8 *buffer, uint32 count, uint32 callStart, uint32 callStop);
 
 #endif /* I2CBB_H_ */
