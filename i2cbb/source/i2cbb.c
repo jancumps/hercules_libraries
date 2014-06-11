@@ -18,6 +18,9 @@
 
 // SCL and SDA pins:
 
+// TODO in a future version, make this a list of SCL/SDA pairs so you can have multiple i2c interfaces.
+// TODO not high priority because the i2c protocol supports addressing multiple ICs
+
 const gioPin_t * _vh_scl = NULL;
 const gioPin_t * _vh_sda = NULL;
 
