@@ -6,6 +6,8 @@ License
 -------
 Free for all.
 It's the intention that all the code submitted here can be used without any restriction.
+The code works for me in the situations I designed it for. Check for yourself if it fullfills your requirements. 
+You can use github to post issues and propose improvements but by using this code you commit to not complain or make claims. 
 If you use, alter or extend this code, please do that in a way that introduces no restrictions for others to use, alter or extend it.
 If code or ideas from other locations are used in this repository, then that is documented in the source header, including a
 reference of the license used by that code.
@@ -16,11 +18,13 @@ GioUtils
 Utility functions to treat ports and pins as a single entitiy when performing gio activities.
 These functions use a gioPin_t struct instead of separate port and pin parameters. 
 It makes it easier to store info needed to drive or read a pin in a single variable.
+Dependent on the Texas Instruments HALCoGen code.
 
 i2cbb
 =====
 I2C master bit bang library. Software implementation for the protocol for these cases where the processor
 doesn't have the peripherals or when you're out of peripherals.
+This code is not my invention. I implemented Vincent Himpe's psudocode framework.
 
 lcd
 ===
