@@ -26,8 +26,11 @@ const gioPin_t * _vh_sda = NULL;
 
 // #define _i2c_wait 1 // 140 kHz
 // #define _i2c_wait 25
-#define _i2c_wait 2 // 105 kHz
+// #define _i2c_wait 2 // 105 kHz
 // #define _i2c_wait 4 // 68 kHz
+// #define _i2c_wait 6 // 40 kHz
+
+uint32 _i2c_delay = 0;
 
 
 /**
@@ -40,9 +43,12 @@ void vh_i2cDelayMicroSeconds(uint32 ms) {
 	}
 }
 
-void i2c_init(const gioPin_t *scl, const gioPin_t *sda) {
+void i2c_init(const gioPin_t *scl, const gioPin_t *sda, uint32 delay) {
 
 	int i = 0;
+
+	// initialise frequency seting
+	_i2c_delay = delay;
 	// two variables that will keep the pin assignment all the time
 	_vh_scl = scl;
 	_vh_sda = sda;
@@ -59,9 +65,9 @@ void i2c_init(const gioPin_t *scl, const gioPin_t *sda) {
 	 * ENDsub
 	 */
 	gioutilsSetPin(_vh_sda, 1);
-	vh_i2cDelayMicroSeconds(_i2c_wait);
+	vh_i2cDelayMicroSeconds(_i2c_delay);
 	gioutilsSetPin(_vh_scl, 0);
-	vh_i2cDelayMicroSeconds(_i2c_wait);
+	vh_i2cDelayMicroSeconds(_i2c_delay);
 	for(i = 0; i <= 3; i++) {
 		i2c_stop();
 	}
@@ -78,15 +84,15 @@ void i2c_start() {
 	 * ENDsub
 	 */
 	gioutilsSetPin(_vh_scl, 1);
-	vh_i2cDelayMicroSeconds(_i2c_wait);
+	vh_i2cDelayMicroSeconds(_i2c_delay);
 	gioutilsSetPin(_vh_sda, 1);
-	vh_i2cDelayMicroSeconds(_i2c_wait);
+	vh_i2cDelayMicroSeconds(_i2c_delay);
 	gioutilsSetPin(_vh_sda, 0);
-	vh_i2cDelayMicroSeconds(_i2c_wait);
+	vh_i2cDelayMicroSeconds(_i2c_delay);
 	gioutilsSetPin(_vh_scl, 0);
-	vh_i2cDelayMicroSeconds(_i2c_wait);
+	vh_i2cDelayMicroSeconds(_i2c_delay);
 	gioutilsSetPin(_vh_sda, 1);
-	vh_i2cDelayMicroSeconds(_i2c_wait);
+	vh_i2cDelayMicroSeconds(_i2c_delay);
 }
 
 void i2c_stop() {
@@ -98,11 +104,11 @@ void i2c_stop() {
 	 * ENDsub
 	 */
 	gioutilsSetPin(_vh_sda, 0);
-	vh_i2cDelayMicroSeconds(_i2c_wait);
+	vh_i2cDelayMicroSeconds(_i2c_delay);
 	gioutilsSetPin(_vh_scl, 1);
-	vh_i2cDelayMicroSeconds(_i2c_wait);
+	vh_i2cDelayMicroSeconds(_i2c_delay);
 	gioutilsSetPin(_vh_sda, 1);
-	vh_i2cDelayMicroSeconds(_i2c_wait);
+	vh_i2cDelayMicroSeconds(_i2c_delay);
 }
 
 void i2c_putByte(uint8 byte) {
@@ -121,14 +127,14 @@ void i2c_putByte(uint8 byte) {
 	for (i = 7; i >= 0; i-- ) {
 		uint32 bit = ((byte >> i) & 0x01);
 		gioutilsSetPin(_vh_sda, bit);
-		vh_i2cDelayMicroSeconds(_i2c_wait);
+		vh_i2cDelayMicroSeconds(_i2c_delay);
 		gioutilsSetPin(_vh_scl, 1);
-		vh_i2cDelayMicroSeconds(_i2c_wait);
+		vh_i2cDelayMicroSeconds(_i2c_delay);
 		gioutilsSetPin(_vh_scl, 0);
-		vh_i2cDelayMicroSeconds(_i2c_wait);
+		vh_i2cDelayMicroSeconds(_i2c_delay);
 	}
 	gioutilsSetPin(_vh_sda, 1);
-	vh_i2cDelayMicroSeconds(_i2c_wait);
+	vh_i2cDelayMicroSeconds(_i2c_delay);
 }
 
 uint8 i2c_getByte() {
@@ -148,16 +154,16 @@ uint8 i2c_getByte() {
 	gioutilsSetPinDirection(_vh_sda, pinRead);
 	for (i = 7; i >= 0; i-- ) {
 		gioutilsSetPin(_vh_scl, 1);
-		vh_i2cDelayMicroSeconds(_i2c_wait);
+		vh_i2cDelayMicroSeconds(_i2c_delay);
 		uint32 bit = gioutilsGetPin(_vh_sda);
-		vh_i2cDelayMicroSeconds(_i2c_wait);
+		vh_i2cDelayMicroSeconds(_i2c_delay);
 		byte = byte | (bit << i);
 		gioutilsSetPin(_vh_scl, 0);
-		vh_i2cDelayMicroSeconds(_i2c_wait);
+		vh_i2cDelayMicroSeconds(_i2c_delay);
 	}
 	gioutilsSetPinDirection(_vh_sda, pinWrite);
 	gioutilsSetPin(_vh_sda, 1);
-	vh_i2cDelayMicroSeconds(_i2c_wait);
+	vh_i2cDelayMicroSeconds(_i2c_delay);
 	return byte;
 }
 
@@ -171,13 +177,13 @@ void i2c_giveAck() {
 	 * ENDsub
 	 */
 	gioutilsSetPin(_vh_sda, 0);
-	vh_i2cDelayMicroSeconds(_i2c_wait);
+	vh_i2cDelayMicroSeconds(_i2c_delay);
 	gioutilsSetPin(_vh_scl, 1);
-	vh_i2cDelayMicroSeconds(_i2c_wait);
+	vh_i2cDelayMicroSeconds(_i2c_delay);
 	gioutilsSetPin(_vh_scl, 0);
-	vh_i2cDelayMicroSeconds(_i2c_wait);
+	vh_i2cDelayMicroSeconds(_i2c_delay);
 	gioutilsSetPin(_vh_sda, 1);
-	vh_i2cDelayMicroSeconds(_i2c_wait);
+	vh_i2cDelayMicroSeconds(_i2c_delay);
 }
 
 void i2c_getAck() {
@@ -190,22 +196,22 @@ void i2c_getAck() {
 	 * ENDSUB
 	 */
 	gioutilsSetPin(_vh_sda, 1);
-	vh_i2cDelayMicroSeconds(_i2c_wait);
+	vh_i2cDelayMicroSeconds(_i2c_delay);
 	gioutilsSetPinDirection(_vh_sda, pinRead);
-	vh_i2cDelayMicroSeconds(_i2c_wait);
+	vh_i2cDelayMicroSeconds(_i2c_delay);
 	gioutilsSetPin(_vh_scl, 1);
-	vh_i2cDelayMicroSeconds(_i2c_wait);
+	vh_i2cDelayMicroSeconds(_i2c_delay);
 	while (gioutilsGetPin(_vh_sda)) {
-		vh_i2cDelayMicroSeconds(_i2c_wait);
+		vh_i2cDelayMicroSeconds(_i2c_delay);
 		// WAITFOR SDA=0
 	}
 	gioutilsSetPinDirection(_vh_sda, pinWrite);
 /*
   	gioutilsSetPin(_vh_sda, 1); // TODO: controversial
-	vh_i2cDelayMicroSeconds(_i2c_wait); // TODO: controversial
+	vh_i2cDelayMicroSeconds(_i2c_delay); // TODO: controversial
 */
 	gioutilsSetPin(_vh_scl, 0);
-	vh_i2cDelayMicroSeconds(_i2c_wait);
+	vh_i2cDelayMicroSeconds(_i2c_delay);
 }
 
 /*
