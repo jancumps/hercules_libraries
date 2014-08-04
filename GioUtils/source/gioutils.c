@@ -23,6 +23,21 @@ void gioutilsSetPinDirection(const gioPin_t *pin, t_pinDir dir) {
 	gioSetDirection(pin->port, uDir);
 }
 
+/**
+ * set the open drain option of a given pin without altering other pins
+ * on the same port
+ *
+ */
+void gioutilsSetPinOpenDrainEnable(const gioPin_t *pin, t_pinOpenDrainOption openDrainOption) {
+	uint32 uPdr = pin->port->PDR;
+	if(openDrainOption==pinOpenDrainEnable) {
+		uPdr |= (1U << pin->bit);
+	} else {
+		uPdr &= ~(1U << pin->bit);
+	}
+	pin->port->PDR = uPdr;
+}
+
 
 /**
  * set the value of a given pin

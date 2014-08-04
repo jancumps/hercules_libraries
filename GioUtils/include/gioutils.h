@@ -18,7 +18,9 @@ typedef struct {
 
 
 typedef enum {pinRead, pinWrite} t_pinDir;
+typedef enum {pinOpenDrainDisable, pinOpenDrainEnable} t_pinOpenDrainOption;
 void gioutilsSetPinDirection(const gioPin_t *pin, t_pinDir dir);
+void gioutilsSetPinOpenDrainEnable(const gioPin_t *pin, t_pinOpenDrainOption openDrainOption);
 void gioutilsSetPin(const gioPin_t *pin, uint32 value);
 uint32 gioutilsGetPin(const gioPin_t *pin);
 
