@@ -18,9 +18,13 @@ typedef struct {
 
 
 typedef enum {pinRead, pinWrite} t_pinDir;
-typedef enum {pinOpenDrainDisable, pinOpenDrainEnable} t_pinOpenDrainOption;
+typedef enum {pinOpenDrainDisable, pinOpenDrainEnable} t_pinOpenDrainEnable;
+typedef enum {pinPullResistorDown, pinPullResistorUp} t_pinPullResistorDirection;
+typedef enum {pinPullResistorDisable, pinPullResistorEnable} t_pinPullResistorEnable;
 void gioutilsSetPinDirection(const gioPin_t *pin, t_pinDir dir);
-void gioutilsSetPinOpenDrainEnable(const gioPin_t *pin, t_pinOpenDrainOption openDrainOption);
+void gioutilsSetPinOpenDrainEnable(const gioPin_t *pin, t_pinOpenDrainEnable openDrainEnable);
+void gioutilsSetPinPullResistorDirection(const gioPin_t *pin, t_pinPullResistorDirection pullResistorDirection);
+void gioutilsSetPinPullResistorEnable(const gioPin_t *pin, t_pinPullResistorEnable pullResistorEnable);
 void gioutilsSetPin(const gioPin_t *pin, uint32 value);
 uint32 gioutilsGetPin(const gioPin_t *pin);
 

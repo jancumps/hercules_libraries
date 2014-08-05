@@ -24,13 +24,13 @@ void gioutilsSetPinDirection(const gioPin_t *pin, t_pinDir dir) {
 }
 
 /**
- * set the open drain option of a given pin without altering other pins
+ * enable / disable the open drain option of a given pin without altering other pins
  * on the same port
  *
  */
-void gioutilsSetPinOpenDrainEnable(const gioPin_t *pin, t_pinOpenDrainOption openDrainOption) {
+void gioutilsSetPinOpenDrainEnable(const gioPin_t *pin, t_pinOpenDrainEnable openDrainEnable) {
 	uint32 uPdr = pin->port->PDR;
-	if(openDrainOption==pinOpenDrainEnable) {
+	if(openDrainEnable==pinOpenDrainEnable) {
 		uPdr |= (1U << pin->bit);
 	} else {
 		uPdr &= ~(1U << pin->bit);
@@ -38,6 +38,35 @@ void gioutilsSetPinOpenDrainEnable(const gioPin_t *pin, t_pinOpenDrainOption ope
 	pin->port->PDR = uPdr;
 }
 
+/**
+ * set the pull resistor direction of a given pin without altering other pins
+ * on the same port
+ *
+ */
+void gioutilsSetPinPullResistorDirection(const gioPin_t *pin, t_pinPullResistorDirection pullResistorDirection) {
+	uint32 uPsl = pin->port->PSL;
+	if(pullResistorDirection==pinPullResistorUp) {
+		uPsl |= (1U << pin->bit);
+	} else {
+		uPsl &= ~(1U << pin->bit);
+	}
+	pin->port->PSL = uPsl;
+}
+
+/**
+ * enable / disable the pull resistor of a given pin without altering other pins
+ * on the same port
+ *
+ */
+void gioutilsSetPinPullResistorEnable(const gioPin_t *pin, t_pinPullResistorEnable pullResistorEnable) {
+	uint32 uPuldis = pin->port->PULDIS;
+	if(pullResistorEnable==pinPullResistorEnable) {
+		uPuldis |= (1U << pin->bit);
+	} else {
+		uPuldis &= ~(1U << pin->bit);
+	}
+	pin->port->PULDIS = uPuldis;
+}
 
 /**
  * set the value of a given pin
