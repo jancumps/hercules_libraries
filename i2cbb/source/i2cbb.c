@@ -45,7 +45,6 @@ void vh_i2cDelayMicroSeconds(uint32 ms) {
 
 void i2c_init(const gioPin_t *scl, const gioPin_t *sda, uint32 delay) {
 
-	int i = 0;
 
 	// initialise frequency seting
 	_i2c_delay = delay;
@@ -59,6 +58,14 @@ void i2c_init(const gioPin_t *scl, const gioPin_t *sda, uint32 delay) {
 	gioutilsSetPinOpenDrainEnable(_vh_scl, pinOpenDrainEnable);
 	gioutilsSetPinOpenDrainEnable(_vh_sda, pinOpenDrainEnable);
 
+	// i2c should work without pulls at the master
+	// gioutilsSetPinPullResistorDirection(_vh_scl, pinPullResistorUp);
+	// gioutilsSetPinPullResistorDirection(_vh_sda, pinPullResistorUp);
+
+	gioutilsSetPinPullResistorEnable(_vh_scl, pinPullResistorDisable);
+	gioutilsSetPinPullResistorEnable(_vh_sda, pinPullResistorDisable);
+
+
 	/*
 	 * SUBroutine I2C_INIT / call this immediately after power-on /
 	 *       SDA=1
@@ -69,6 +76,7 @@ void i2c_init(const gioPin_t *scl, const gioPin_t *sda, uint32 delay) {
 	 * ENDsub
 	 */
 /*	gioutilsSetPin(_vh_sda, 1);
+	int i = 0;
 	vh_i2cDelayMicroSeconds(_i2c_delay);
 	gioutilsSetPin(_vh_scl, 0);
 	vh_i2cDelayMicroSeconds(_i2c_delay);
