@@ -1,0 +1,13 @@
+SCK_PIN      .equ    0                          ; HET00 is used for SCK
+SDA_PIN      .equ    2                          ; HET02 is used for SDA
+
+;test: PWM = 100 KHz, HETPFR value = 1304
+
+; only perform for the number of counts the calling program defines
+
+START_SCK_001 DJZ {next=PWM001, cond_addr=END_LABEL, irq=off, data=0}
+PWM001   CNT { next=PWM002,reg=A,max=0,data=0};
+PWM002 ECMP { next=PWM003,hr_lr=HIGH,en_pin_action=ON,pin=SCK_PIN,action=PULSELO,reg=A,data=0,hr_data=64}
+PWM003   ECMP { next=END_LABEL,hr_lr=HIGH,en_pin_action=ON,pin=SDA_PIN,action=PULSEHI,reg=A,data=0,hr_data=32};
+END_LABEL BR {next=START_SCK_001, cond_addr=START_SCK_001,event=NOCOND, irq=off}
+
