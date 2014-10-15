@@ -1,0 +1,273 @@
+;*******************************************************************************
+;  TMS470R1A256 Demo - 2 x 115,200 Baud UART using HET
+;
+;  Description: This program implements 2 x 115,200 Baud UARTs using the HET.
+;  Pins HET0/HET1 are used for UART1 and pins HET2/HET3 are used for
+;  UART2. Note that any HET pins can be used.
+;  SYSCLK = 8x7.5MHz = 60MHz.
+;
+;  Andreas Dannenberg
+;  Texas Instruments, Inc
+;  June 06th 2006
+;  Built with IAR Embedded Workbench Version: 4.31A
+;  B1M EVM
+;*******************************************************************************
+
+TX1_PIN     .equ    0                           ; HET0 is used for UART1 TX
+RX1_PIN     .equ    1                           ; HET1 is used for UART1 RX
+
+TX2_PIN     .equ    2                           ; HET2 is used for UART2 TX
+RX2_PIN     .equ    3                           ; HET3 is used for UART2 RX
+
+DUMMY_PIN   .equ    25                          ; Dummy pin for SHFT instruction
+
+BIT_PRD     .equ    7                           ; 1 bit period [LRCLK] less 1
+BIT_PRD_1_5 .equ    12                          ; 1.5 bit period [LRCLK] less 1
+BITS2RX     .equ    8                           ; Rec 8+1 bits after start bit
+
+;-------------------------------------------------------------------------------
+; UART1 TX Routine
+;
+; Code length    : 10 Words
+; Interrupt      : TX_Start + 2
+; Min cycle count: 1
+; Max cycle count: 9
+;-------------------------------------------------------------------------------
+
+; If data != 0, then execute TX routine
+; If data == 0, then skip TX routine
+TX1_Start   DJZ     { next=TX1_PrdCtr, cond_addr=TX1_End, irq=OFF, data=0 }
+
+; If PeriodCtr != 0, then skip TX routine
+; If PeriodCtr == 0, then continue TX routine to process next bit
+TX1_PrdCtr  DJZ     { next=TX1_Cont, cond_addr=TX1_BitCtr, irq=OFF, data=0 }
+
+; If BitCtr != 0, then continue TX routine to process next bit
+; If BitCtr == 0, then TX is done. Interrupt is generated.
+; Note that BitCtr is set by the main ARM7 program prior TX.
+TX1_BitCtr  DJZ     { next=TX1_Shift, cond_addr=TX1_End, irq=ON, data=0 }
+
+; Shift DUMMY_PIN state into MSB / LSB into Z.
+; Data to transmit is written here by the main ARM7 program.
+TX1_Shift   SHFT    { next=TX1_LoadA, smode=IRZ, cond_addr=TX1_LoadA,
+                      cond=UNC, pin=DUMMY_PIN, reg=NONE, irq=OFF, data=0 }
+
+; Load 0 to register A (Used as MCMP compare value)
+TX1_LoadA   MOV32   { next=TX1_CheckZ, remote=TX1_LoadA, type=IMTOREG,
+                      reg=A, data=0 }
+
+; Test bit that was shifted into Z
+TX1_CheckZ   BR     { next=TX1_Low, cond_addr=TX1_High, event=ZERO, irq=OFF }
+
+; Set TX1_PIN
+; The comparison with register A must always be true.
+TX1_High    MCMP    { next=TX1_Reload, cond_addr=TX1_Reload, reg=A,
+                      en_pin_action=ON, pin=TX1_PIN, order=DATA_GE_REG,
+                      action=SET, data=0x7FFFF}
+
+; Clear TX1_PIN
+; The comparison with register A must always be true.
+TX1_Low     MCMP    { next=TX1_Reload, cond_addr=TX1_Reload, reg=A,
+                      en_pin_action=ON, pin=TX1_PIN, order=DATA_GE_REG,
+                      action=CLEAR, data=0x7FFFF}
+
+; Reload the bit period counter
+TX1_Reload  MOV32   { next=TX1_Cont, remote=TX1_PrdCtr, type=IMTOREG&REM,
+                      reg=NONE, data=BIT_PRD }
+
+; Run the TX routine on next LR by setting the data field of DJZ to 1
+TX1_Cont    MOV32   { next=TX1_End, remote=TX1_Start, type=IMTOREG&REM, reg=NONE,
+                      data=1 }
+
+TX1_End
+
+;-------------------------------------------------------------------------------
+; UART1 RX Routine
+;
+; Code length    : 15 Words
+; Interrupt      : RX_Start + 8
+; Min cycle count: 2
+; Max cycle count: 11
+;-------------------------------------------------------------------------------
+
+; If data != 0, then execute RX routine
+; If data == 0, then skip RX routine, detect start bit
+RX1_Start   DJZ     { next=RX1_PrdCtr, cond_addr=RX1_Detect, irq=OFF, data=0 }
+
+; If PeriodCtr != 0, then skip RX routine
+; If PeriodCtr == 0, then receive next bit
+RX1_PrdCtr  DJZ     { next=RX1_Cont, cond_addr=RX1_Shift, irq=OFF, data=0 }
+
+; Shift LSB to DUMMY_PIN / 0 into MSB.
+RX1_Shift   SHFT    { next=RX1_Check, cond_addr=RX1_Check, reg=NONE, smode=OR0,
+                      cond=UNC, pin=DUMMY_PIN, data=0 }
+
+; Check state of RX1_PIN
+RX1_Check   BR      { next=RX1_High, cond_addr=RX1_BitCtr, pin=RX1_PIN, event=LOW }
+
+; Set MSB of the SHFT data field if RX1_PIN was high
+RX1_High    ADCNST  { next=RX1_BitCtr, remote=RX1_Shift, min_off=0, data=0x80000 }
+
+; If BitCtr != 0, then continue RX routine to process next bit
+; If BitCtr == 0, then RX is done
+RX1_BitCtr  DJZ     { next=RX1_Reload, cond_addr=RX1_Done, irq=OFF, data=0 }
+
+; Store received data
+RX1_Done    MOV32   { next=RX1_Done2, remote=RX1_Shift, type=REMTOREG,
+                      reg=A, data=0 }
+RX1_Done2   MOV32   { next=RX1_Done3, remote=RX1_Buffer, type=REGTOREM,
+                      reg=A, data=0 }
+
+; Generate RX interrupt
+RX1_Done3   DJZ     { next=RX1_End, cond_addr=RX1_End, irq=ON, data=0 }
+
+; Dummy instruction to hold RX value. ARM7 reads out received value here.
+RX1_Buffer  MOV32   { next=RX1_Buffer, remote=RX1_Buffer, type=IMTOREG,
+                      reg=NONE, data=0 }
+
+; Reload the bit period counter with BIT_PRD
+RX1_Reload  MOV32   { next=RX1_Cont, remote=RX1_PrdCtr, type=IMTOREG&REM,
+                      reg=NONE, data=BIT_PRD }
+
+; Check for low-level on RX1_PIN (start bit)
+RX1_Detect  BR      { next=RX1_End, cond_addr=RX1_Low, pin=RX1_PIN, event=LOW,
+                      irq=OFF }
+
+; Reload the bit period counter with 1.5 x BIT_PRD (middle of 1st data bit)
+RX1_Low     MOV32   { next=RX1_Low2, remote=RX1_PrdCtr, type=IMTOREG&REM,
+                      reg=NONE, data=BIT_PRD_1_5 }
+
+; Reload BitCtr instruction data field to receive BITS2RX bits
+RX1_Low2    MOV32   { next=RX1_Cont, remote=RX1_BitCtr, type=IMTOREG&REM,
+                      reg=NONE, data=BITS2RX }
+
+; Run the RX routine on next LR by setting the data field of DJZ to 1
+RX1_Cont    MOV32   { next=RX1_End, remote=RX1_Start, type=IMTOREG&REM, reg=NONE,
+                      data=1 }
+
+RX1_End
+
+;-------------------------------------------------------------------------------
+; UART2 TX Routine
+;
+; Code length    : 10 Words
+; Interrupt      : TX_Start + 2
+; Min cycle count: 1
+; Max cycle count: 9
+;-------------------------------------------------------------------------------
+
+; If data != 0, then execute TX routine
+; If data == 0, then skip TX routine
+TX2_Start   DJZ     { next=TX2_PrdCtr, cond_addr=TX2_End, irq=OFF, data=0 }
+
+; If PeriodCtr != 0, then skip TX routine
+; If PeriodCtr == 0, then continue TX routine to process next bit
+TX2_PrdCtr  DJZ     { next=TX2_Cont, cond_addr=TX2_BitCtr, irq=OFF, data=0 }
+
+; If BitCtr != 0, then continue TX routine to process next bit
+; If BitCtr == 0, then TX is done. Interrupt is generated.
+; Note that BitCtr is set by the main ARM7 program prior TX.
+TX2_BitCtr  DJZ     { next=TX2_Shift, cond_addr=TX2_End, irq=ON, data=0 }
+
+; Shift DUMMY_PIN state into MSB / LSB into Z.
+; Data to transmit is written here by the main ARM7 program.
+TX2_Shift   SHFT    { next=TX2_LoadA, smode=IRZ, cond_addr=TX2_LoadA,
+                      cond=UNC, pin=DUMMY_PIN, reg=NONE, irq=OFF, data=0 }
+
+; Load 0 to register A (Used as MCMP compare value)
+TX2_LoadA   MOV32   { next=TX2_CheckZ, remote=TX2_LoadA, type=IMTOREG,
+                      reg=A, data=0 }
+
+; Test bit that was shifted into Z
+TX2_CheckZ  BR      { next=TX2_Low, cond_addr=TX2_High, event=ZERO, irq=OFF }
+
+; Set TX2_PIN
+; The comparison with register A must always be true.
+TX2_High    MCMP    { next=TX2_Reload, cond_addr=TX2_Reload, reg=A,
+                      en_pin_action=ON, pin=TX2_PIN, order=DATA_GE_REG,
+                      action=SET, data=0x7FFFF}
+
+; Clear TX2_PIN
+; The comparison with register A must always be true.
+TX2_Low     MCMP    { next=TX2_Reload, cond_addr=TX2_Reload, reg=A,
+                      en_pin_action=ON, pin=TX2_PIN, order=DATA_GE_REG,
+                      action=CLEAR, data=0x7FFFF}
+
+; Reload the bit period counter
+TX2_Reload  MOV32   { next=TX2_Cont, remote=TX2_PrdCtr, type=IMTOREG&REM,
+                      reg=NONE, data=BIT_PRD }
+
+; Run the TX routine on next LR by setting the data field of DJZ to 1
+TX2_Cont    MOV32   { next=TX2_End, remote=TX2_Start, type=IMTOREG&REM, reg=NONE,
+                      data=1 }
+
+TX2_End
+
+;-------------------------------------------------------------------------------
+; UART2 RX Routine
+;
+; Code length    : 15 Words
+; Interrupt      : RX_Start + 8
+; Min cycle count: 2
+; Max cycle count: 11
+;-------------------------------------------------------------------------------
+
+; If data != 0, then execute RX routine
+; If data == 0, then skip RX routine, detect start bit
+RX2_Start   DJZ     { next=RX2_PrdCtr, cond_addr=RX2_Detect, irq=OFF, data=0 }
+
+; If PeriodCtr != 0, then skip RX routine
+; If PeriodCtr == 0, then receive next bit
+RX2_PrdCtr  DJZ     { next=RX2_Cont, cond_addr=RX2_Shift, irq=OFF, data=0 }
+
+; Shift LSB to DUMMY_PIN / 0 into MSB.
+RX2_Shift   SHFT    { next=RX2_Check, cond_addr=RX2_Check, reg=NONE, smode=OR0,
+                      cond=UNC, pin=DUMMY_PIN, data=0 }
+
+; Check state of RX2_PIN
+RX2_Check   BR      { next=RX2_High, cond_addr=RX2_BitCtr, pin=RX2_PIN, event=LOW }
+
+; Set MSB of the SHFT data field if RX2_PIN was high
+RX2_High    ADCNST  { next=RX2_BitCtr, remote=RX2_Shift, min_off=0, data=0x80000 }
+
+; If BitCtr != 0, then continue RX routine to process next bit
+; If BitCtr == 0, then RX is done
+RX2_BitCtr  DJZ     { next=RX2_Reload, cond_addr=RX2_Done, irq=OFF, data=0 }
+
+; Store received data
+RX2_Done    MOV32   { next=RX2_Done2, remote=RX2_Shift, type=REMTOREG,
+                      reg=A, data=0 }
+RX2_Done2   MOV32   { next=RX2_Done3, remote=RX2_Buffer, type=REGTOREM,
+                      reg=A, data=0 }
+
+; Generate RX interrupt
+RX2_Done3   DJZ     { next=RX2_End, cond_addr=RX2_End, irq=ON, data=0 }
+
+; Dummy instruction to hold RX value. ARM7 reads out received value here.
+RX2_Buffer  MOV32   { next=RX2_Buffer, remote=RX2_Buffer, type=IMTOREG,
+                      reg=NONE, data=0 }
+
+; Reload the bit period counter with BIT_PRD
+RX2_Reload  MOV32   { next=RX2_Cont, remote=RX2_PrdCtr, type=IMTOREG&REM,
+                      reg=NONE, data=BIT_PRD }
+
+; Check for low-level on RX2_PIN (start bit)
+RX2_Detect  BR      { next=RX2_End, cond_addr=RX2_Low, pin=RX2_PIN, event=LOW,
+                      irq=OFF }
+
+; Reload the bit period counter with 1.5 x BIT_PRD (middle of 1st data bit)
+RX2_Low     MOV32   { next=RX2_Low2, remote=RX2_PrdCtr, type=IMTOREG&REM,
+                      reg=NONE, data=BIT_PRD_1_5 }
+
+; Reload BitCtr instruction data field to receive BITS2RX bits
+RX2_Low2    MOV32   { next=RX2_Cont, remote=RX2_BitCtr, type=IMTOREG&REM,
+                      reg=NONE, data=BITS2RX }
+
+; Run the RX routine on next LR by setting the data field of DJZ to 1
+RX2_Cont    MOV32   { next=RX2_End, remote=RX2_Start, type=IMTOREG&REM, reg=NONE,
+                      data=1 }
+
+RX2_End
+;-------------------------------------------------------------------------------
+            BR      { next=TX1_Start, cond_addr=TX1_Start, event=NOCOND, irq=OFF }
+

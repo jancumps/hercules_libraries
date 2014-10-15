@@ -1,0 +1,153 @@
+;*******************************************************************************
+;  TMS470R1B1M Demo - 9,600 Baud UART using HET
+;
+;  Description: This program implements a 9,600 Baud UART using the HET.
+;  Pin HET0 is used for TX, HET1 for RX. Note that any HET pins can be used.
+;  SYSCLK = 8x7.5MHz = 60MHz.
+;
+;  Andreas Dannenberg
+;  Texas Instruments, Inc
+;  June 06th 2006
+;  Built with IAR Embedded Workbench Version: 4.31A
+;  B1M EVM
+;*******************************************************************************
+
+TX_PIN      .equ    0                           ; HET0 is used for TX
+RX_PIN      .equ    1                           ; HET1 is used for RX
+
+DUMMY_PIN   .equ    25                          ; Dummy pin for SHFT instruction
+
+BIT_PRD     .equ    48                          ; 1 bit period [LRCLK] less 1
+BIT_PRD_1_5 .equ    72                          ; 1.5 bit period [LRCLK] less 1
+BITS2RX     .equ    8                           ; Rec 8+1 bits after start bit
+
+;-------------------------------------------------------------------------------
+; UART TX Routine
+;
+; Code length    : 10 Words
+; Interrupt      : TX_Start + 2
+; Min cycle count: 1
+; Max cycle count: 9
+;-------------------------------------------------------------------------------
+
+; If data != 0, then execute TX routine
+; If data == 0, then skip TX routine
+TX_Start    DJZ     { next=TX_PrdCtr, cond_addr=TX_End, irq=OFF, data=0 }
+
+; If PeriodCtr != 0, then skip TX routine
+; If PeriodCtr == 0, then continue TX routine to process next bit
+TX_PrdCtr   DJZ     { next=TX_Cont, cond_addr=TX_BitCtr, irq=OFF, data=0 }
+
+; If BitCtr != 0, then continue TX routine to process next bit
+; If BitCtr == 0, then TX is done. Interrupt is generated.
+; Note that BitCtr is set by the main ARM7 program prior TX.
+TX_BitCtr   DJZ     { next=TX_Shift, cond_addr=TX_End, irq=ON, data=0 }
+
+; Shift DUMMY_PIN state into MSB / LSB into Z.
+; Data to transmit is written here by the main ARM7 program.
+TX_Shift    SHFT    { next=TX_LoadA, smode=IRZ, cond_addr=TX_LoadA,
+                      cond=UNC, pin=DUMMY_PIN, reg=NONE, irq=OFF, data=0 }
+
+; Load 0 to register A (Used as MCMP compare value)
+TX_LoadA    MOV32   { next=TX_CheckZ, remote=TX_LoadA, type=IMTOREG,
+                      reg=A, data=0 }
+
+; Test bit that was shifted into Z
+TX_CheckZ   BR      { next=TX_Low, cond_addr=TX_High, event=ZERO, irq=OFF }
+
+; Set TX_PIN
+; The comparison with register A must always be true.
+TX_High     MCMP    { next=TX_Reload, cond_addr=TX_Reload, reg=A,
+                      en_pin_action=ON, pin=TX_PIN, order=DATA_GE_REG,
+                      action=SET, data=0x7FFFF}
+
+; Clear TX_PIN
+; The comparison with register A must always be true.
+TX_Low      MCMP    { next=TX_Reload, cond_addr=TX_Reload, reg=A,
+                      en_pin_action=ON, pin=TX_PIN, order=DATA_GE_REG,
+                      action=CLEAR, data=0x7FFFF}
+
+; Reload the bit period counter
+TX_Reload   MOV32   { next=TX_Cont, remote=TX_PrdCtr, type=IMTOREG&REM,
+                      reg=NONE, data=BIT_PRD }
+
+; Run the TX routine on next LR by setting the data field of DJZ to 1
+TX_Cont     MOV32   { next=TX_End, remote=TX_Start, type=IMTOREG&REM, reg=NONE,
+                      data=1 }
+
+TX_End
+
+;-------------------------------------------------------------------------------
+; UART RX Routine
+;
+; Code length    : 15 Words
+; Interrupt      : RX_Start + 8
+; Min cycle count: 2
+; Max cycle count: 11
+;-------------------------------------------------------------------------------
+
+; If data != 0, then execute RX routine
+; If data == 0, then skip RX routine, detect start bit
+RX_Start    DJZ     { next=RX_PrdCtr, cond_addr=RX_Detect, irq=OFF, data=0 }
+
+; If PeriodCtr != 0, then skip RX routine
+; If PeriodCtr == 0, then receive next bit
+RX_PrdCtr   DJZ     { next=RX_Cont, cond_addr=RX_Shift, irq=OFF, data=0 }
+
+; Shift LSB to DUMMY_PIN / 0 into MSB.
+RX_Shift    SHFT    { next=RX_Check, cond_addr=RX_Check, reg=NONE, smode=OR0,
+                      cond=UNC, pin=DUMMY_PIN, data=0 }
+
+; Check state of RX_PIN
+RX_Check    BR      { next=RX_High, cond_addr=RX_BitCtr, pin=RX_PIN, event=LOW }
+
+; Set MSB of the SHFT data field if RX_PIN was high
+RX_High     ADCNST  { next=RX_BitCtr, remote=RX_Shift, min_off=0, data=0x80000 }
+
+; If BitCtr != 0, then continue RX routine to process next bit
+; If BitCtr == 0, then RX is done
+RX_BitCtr   DJZ     { next=RX_Reload, cond_addr=RX_Done, irq=OFF, data=0 }
+
+; Store received data
+RX_Done     MOV32   { next=RX_Done2, remote=RX_Shift, type=REMTOREG,
+                      reg=A, data=0 }
+RX_Done2    MOV32   { next=RX_Done3, remote=RX_Buffer, type=REGTOREM,
+                      reg=A, data=0 }
+
+; Generate RX interrupt
+RX_Done3    DJZ     { next=RX_End, cond_addr=RX_End, irq=ON, data=0 }
+
+; Dummy instruction to hold RX value. ARM7 reads out received value here.
+RX_Buffer   MOV32   { next=RX_Buffer, remote=RX_Buffer, type=IMTOREG,
+                      reg=NONE, data=0 }
+
+; Reload the bit period counter with BIT_PRD
+RX_Reload   MOV32   { next=RX_Cont, remote=RX_PrdCtr, type=IMTOREG&REM,
+                      reg=NONE, data=BIT_PRD }
+
+; Check for low-level on RX_PIN (start bit)
+RX_Detect   BR      { next=RX_End, cond_addr=RX_Low, pin=RX_PIN, event=LOW,
+                      irq=OFF }
+
+; Reload the bit period counter with 1.5 x BIT_PRD (middle of 1st data bit)
+RX_Low      MOV32   { next=RX_Low2, remote=RX_PrdCtr, type=IMTOREG&REM,
+                      reg=NONE, data=BIT_PRD_1_5 }
+
+; Reload BitCtr instruction data field to receive BITS2RX bits
+RX_Low2     MOV32   { next=RX_Cont, remote=RX_BitCtr, type=IMTOREG&REM,
+                      reg=NONE, data=BITS2RX }
+
+; Run the RX routine on next LR by setting the data field of DJZ to 1
+RX_Cont     MOV32   { next=RX_End, remote=RX_Start, type=IMTOREG&REM, reg=NONE,
+                      data=1 }
+
+RX_End
+;-------------------------------------------------------------------------------
+            BR      { next=TX_Start, cond_addr=TX_Start, event=NOCOND, irq=OFF }
+
+
+
+
+
+
+
