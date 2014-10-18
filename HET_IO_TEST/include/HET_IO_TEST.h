@@ -5,40 +5,60 @@
 
 #include "std_nhet.h"
 
-#define HET_START_SCK_001_0	(e_HETPROGRAM0_UN.Program0_ST.START_SCK_001_0)
-#define pHET_START_SCK_001_0  	0
+#define HET_i2c_init_0	(e_HETPROGRAM0_UN.Program0_ST.i2c_init_0)
+#define pHET_i2c_init_0  	0
 
-#define HET_PWM001_0	(e_HETPROGRAM0_UN.Program0_ST.PWM001_0)
-#define pHET_PWM001_0  	1
+#define HET_i2c_init_01_0	(e_HETPROGRAM0_UN.Program0_ST.i2c_init_01_0)
+#define pHET_i2c_init_01_0  	1
 
-#define HET_PWM002_0	(e_HETPROGRAM0_UN.Program0_ST.PWM002_0)
-#define pHET_PWM002_0  	2
+#define HET_i2c_init_02_0	(e_HETPROGRAM0_UN.Program0_ST.i2c_init_02_0)
+#define pHET_i2c_init_02_0  	2
 
-#define HET_PWM003_0	(e_HETPROGRAM0_UN.Program0_ST.PWM003_0)
-#define pHET_PWM003_0  	3
+#define HET_i2c_start_0	(e_HETPROGRAM0_UN.Program0_ST.i2c_start_0)
+#define pHET_i2c_start_0  	3
 
-#define HET_END_LABEL_0	(e_HETPROGRAM0_UN.Program0_ST.END_LABEL_0)
-#define pHET_END_LABEL_0  	4
+#define HET_i2c_repeat_start_0	(e_HETPROGRAM0_UN.Program0_ST.i2c_repeat_start_0)
+#define pHET_i2c_repeat_start_0  	4
+
+#define HET_i2c_write_0	(e_HETPROGRAM0_UN.Program0_ST.i2c_write_0)
+#define pHET_i2c_write_0  	5
+
+#define HET_i2c_read_0	(e_HETPROGRAM0_UN.Program0_ST.i2c_read_0)
+#define pHET_i2c_read_0  	6
+
+#define HET_i2c_ack_0	(e_HETPROGRAM0_UN.Program0_ST.i2c_ack_0)
+#define pHET_i2c_ack_0  	7
+
+#define HET_i2c_stop_0	(e_HETPROGRAM0_UN.Program0_ST.i2c_stop_0)
+#define pHET_i2c_stop_0  	8
+
+#define HET_i2c_endlabel_0	(e_HETPROGRAM0_UN.Program0_ST.i2c_endlabel_0)
+#define pHET_i2c_endlabel_0  	9
 
 
 
 typedef union 
 { 
- 	HET_MEMORY	Memory0_PST[5];
+ 	HET_MEMORY	Memory0_PST[10];
 	struct
 	{
-		DJZ_INSTRUCTION START_SCK_001_0;
-		CNT_INSTRUCTION PWM001_0;
-		ECMP_INSTRUCTION PWM002_0;
-		ECMP_INSTRUCTION PWM003_0;
-		BR_INSTRUCTION END_LABEL_0;
+		DJZ_INSTRUCTION i2c_init_0;
+		ECMP_INSTRUCTION i2c_init_01_0;
+		ECMP_INSTRUCTION i2c_init_02_0;
+		BR_INSTRUCTION i2c_start_0;
+		BR_INSTRUCTION i2c_repeat_start_0;
+		BR_INSTRUCTION i2c_write_0;
+		BR_INSTRUCTION i2c_read_0;
+		BR_INSTRUCTION i2c_ack_0;
+		BR_INSTRUCTION i2c_stop_0;
+		BR_INSTRUCTION i2c_endlabel_0;
 	} Program0_ST; 
 
 } HETPROGRAM0_UN;
 
 extern volatile HETPROGRAM0_UN e_HETPROGRAM0_UN;
 
-extern const HET_MEMORY HET_INIT0_PST[5];
+extern const HET_MEMORY HET_INIT0_PST[10];
 
 #endif
 

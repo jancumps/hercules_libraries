@@ -1,13 +1,30 @@
-SCK_PIN      .equ    0                          ; HET00 is used for SCK
+SCL_PIN      .equ    0                          ; HET00 is used for SCL
 SDA_PIN      .equ    2                          ; HET02 is used for SDA
 
-;test: PWM = 100 KHz, HETPFR value = 1304
 
-; only perform for the number of counts the calling program defines
+; i2cinit
+; sda = 1
+; scl = 1
+; idle state, when i2c isn't doing anything
+; we perform this when i2c_init.data is 0
+; if data == 0 then execute i2c_init
+; if data != 1 then skip to start
 
-START_SCK_001 DJZ {next=PWM001, cond_addr=END_LABEL, irq=off, data=0}
-PWM001   CNT { next=PWM002,reg=A,max=0,data=0};
-PWM002 ECMP { next=PWM003,hr_lr=HIGH,en_pin_action=ON,pin=SCK_PIN,action=PULSELO,reg=A,data=0,hr_data=64}
-PWM003   ECMP { next=END_LABEL,hr_lr=HIGH,en_pin_action=ON,pin=SDA_PIN,action=PULSEHI,reg=A,data=0,hr_data=32};
-END_LABEL BR {next=START_SCK_001, cond_addr=START_SCK_001,event=NOCOND, irq=off}
+i2c_init   DJZ { next=i2c_start,cond_addr=i2c_init_01,irq=OFF,data=0};
+i2c_init_01 ECMP { next=i2c_init_02,hr_lr=LOW,en_pin_action=ON,cond_addr=i2c_init_02,pin=SCL_PIN,action=SET,reg=A,irq=OFF,data=0};
+i2c_init_02 ECMP { next=i2c_endlabel,hr_lr=LOW,en_pin_action=ON,cond_addr=i2c_endlabel,pin=SDA_PIN,action=CLEAR,reg=A,irq=OFF,data=0}; TODO this must be HIGH, I have set to LOW for testing
+
+i2c_start br {next=i2c_init, cond_addr=i2c_init,event=nocond, irq=off} ; TODO this is placeholder needs implementation
+
+i2c_repeat_start br {next=i2c_init, cond_addr=i2c_init,event=nocond, irq=off} ; TODO this is placeholder needs implementation
+
+i2c_write br {next=i2c_init, cond_addr=i2c_init,event=nocond, irq=off} ; TODO this is placeholder needs implementation
+
+i2c_read br {next=i2c_init, cond_addr=i2c_init,event=nocond, irq=off} ; TODO this is placeholder needs implementation
+
+i2c_ack br {next=i2c_init, cond_addr=i2c_init,event=nocond, irq=off} ; TODO this is placeholder needs implementation
+
+i2c_stop br {next=i2c_init, cond_addr=i2c_init,event=nocond, irq=off} ; TODO this is placeholder needs implementation
+
+i2c_endlabel br {next=i2c_init, cond_addr=i2c_init,event=nocond, irq=off}
 
