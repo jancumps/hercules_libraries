@@ -6,7 +6,6 @@
 /sys_core.asm
 /sys_intvecs.asm
 /sys_link.cmd
-/sys_main.c
 /sys_mpu.asm
 /sys_pcr.c
 /sys_phantom.c
