@@ -1,5 +1,6 @@
 SCL_PIN      .equ    0                          ; HET00 is used for SCL
 SDA_PIN      .equ    2                          ; HET02 is used for SDA
+REG_STATE    .equ	 T							; T will contains the state machine's state - TODO: validate if needed
 
 
 ; i2cinit
@@ -12,7 +13,7 @@ SDA_PIN      .equ    2                          ; HET02 is used for SDA
 
 i2c_init   DJZ { next=i2c_start,cond_addr=i2c_init_01,irq=OFF,data=0};
 i2c_init_01 ECMP { next=i2c_init_02,hr_lr=LOW,en_pin_action=ON,cond_addr=i2c_init_02,pin=SCL_PIN,action=SET,reg=A,irq=OFF,data=0};
-i2c_init_02 ECMP { next=i2c_endlabel,hr_lr=LOW,en_pin_action=ON,cond_addr=i2c_endlabel,pin=SDA_PIN,action=CLEAR,reg=A,irq=OFF,data=0}; TODO this must be HIGH, I have set to LOW for testing
+i2c_init_02 ECMP { next=i2c_endlabel,hr_lr=LOW,en_pin_action=ON,cond_addr=i2c_endlabel,pin=SDA_PIN,action=SET,reg=A,irq=OFF,data=0};
 
 i2c_start br {next=i2c_init, cond_addr=i2c_init,event=nocond, irq=off} ; TODO this is placeholder needs implementation
 

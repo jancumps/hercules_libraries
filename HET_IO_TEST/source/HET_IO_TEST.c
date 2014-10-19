@@ -11,7 +11,7 @@ HET_MEMORY const HET_INIT0_PST[10] =
 		0x00000000
 	}, 
 
- 	/* i2c_init_01_0 */ 
+ 	/* hetlabel_1_0 */ 
 	{
 		0x00004100, 
 		0x00404010, 
@@ -19,15 +19,15 @@ HET_MEMORY const HET_INIT0_PST[10] =
 		0x00000000
 	}, 
 
- 	/* i2c_init_02_0 */ 
+ 	/* hetlabel_2_0 */ 
 	{
 		0x00012100, 
-		0x00412200, 
+		0x00412210, 
 		0x00000000, 
 		0x00000000
 	}, 
 
- 	/* i2c_start_0 */ 
+ 	/* hetlabel_3_0 */ 
 	{
 		0x00001A00, 
 		0x00000000, 
@@ -35,7 +35,7 @@ HET_MEMORY const HET_INIT0_PST[10] =
 		0x00000000
 	}, 
 
- 	/* i2c_repeat_start_0 */ 
+ 	/* hetlabel_4_0 */ 
 	{
 		0x00001A00, 
 		0x00000000, 
@@ -43,7 +43,7 @@ HET_MEMORY const HET_INIT0_PST[10] =
 		0x00000000
 	}, 
 
- 	/* i2c_write_0 */ 
+ 	/* hetlabel_5_0 */ 
 	{
 		0x00001A00, 
 		0x00000000, 
@@ -51,7 +51,7 @@ HET_MEMORY const HET_INIT0_PST[10] =
 		0x00000000
 	}, 
 
- 	/* i2c_read_0 */ 
+ 	/* hetlabel_6_0 */ 
 	{
 		0x00001A00, 
 		0x00000000, 
@@ -59,7 +59,7 @@ HET_MEMORY const HET_INIT0_PST[10] =
 		0x00000000
 	}, 
 
- 	/* i2c_ack_0 */ 
+ 	/* hetlabel_7_0 */ 
 	{
 		0x00001A00, 
 		0x00000000, 
@@ -67,7 +67,7 @@ HET_MEMORY const HET_INIT0_PST[10] =
 		0x00000000
 	}, 
 
- 	/* i2c_stop_0 */ 
+ 	/* hetlabel_8_0 */ 
 	{
 		0x00001A00, 
 		0x00000000, 
@@ -75,7 +75,7 @@ HET_MEMORY const HET_INIT0_PST[10] =
 		0x00000000
 	}, 
 
- 	/* i2c_endlabel_0 */ 
+ 	/* hetlabel_9_0 */ 
 	{
 		0x00001A00, 
 		0x00000000, 
