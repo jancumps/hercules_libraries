@@ -17,15 +17,18 @@
 #include "sys_selftest.h"
 #include "het.h"
 
-extern char IntEna;
-extern unsigned char *I2C1_txptr, *I2C1_rxptr, *I2C2_txptr, *I2C2_rxptr;
-extern unsigned char I2C1_RxData[], I2C2_RxData[];
-extern unsigned int Data_Send_HET, Data_Rece_HET,Start_Repeat;
-extern char RW;
-extern char I2C_ADDR; // todo: jc 20141024 this is a hack to make the TI emukator code work, candidate for refactoring
-
 /* USER CODE BEGIN (0) */
 #include "HET_EMU.h"
+
+
+extern unsigned int Data_Send_HET;
+extern unsigned int Data_Rece_HET;
+extern char I2C_ADDR;
+extern unsigned char *I2C1_txptr;
+extern unsigned char *I2C1_rxptr;
+extern char IntEna;
+extern char RW;
+extern unsigned int Start_Repeat;
 
 /* USER CODE END */
 #pragma WEAK(esmGroup1Notification)

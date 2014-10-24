@@ -73,7 +73,8 @@ void main(void)
 
 	int i;
 
-	char NumOfBytes =3, StopBit = 1;
+	char NumOfBytes =3;
+	char StopBit = 1;
 	volatile unsigned int wait_counter;
 
 
@@ -94,7 +95,7 @@ void main(void)
 
 
 
-
+	// todo jc 20141024 this is part of TI's i2c example loop, remove
 	for (i=0;i<I2C_MSGSIZE;i++)
 	{
 		I2C1_RxData[i] = 0xff;
@@ -106,9 +107,11 @@ void main(void)
 	I2C2_rxptr = I2C2_RxData;
 
 	hetInit();
-	hetREG1->INTENAS = 0xFFFFFFFFU;
+	hetREG1->INTENAS = 0xFFFFFFFFU;	// todo jc 20141024 check if this is needed
 	//asm(" cpsie i");
-	hetREG1->GCR = 0x01010001;
+	hetREG1->GCR = 0x01010001;	// todo jc 20141024 check if this is needed
+
+	 _enable_IRQ();	// todo jc 20141024 check if this is needed
 
 	//test for master transmit mode
 	HetI2CPutAddr(I2C_ADDR, RW, NumOfBytes, IntEna, StopBit);

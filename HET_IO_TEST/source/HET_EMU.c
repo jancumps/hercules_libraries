@@ -26,7 +26,9 @@ void HetI2CPutAddr(char Addr, char RW, char NumOfBytes, char IntEna, char StopBi
   Tmp <<= 23;                                    // Shift in start bit (0)
   Tmp |= (NumOfBytes<<7);
   Tmp |= (IntEna & 1) <<18;
-  if(StopBit) Tmp |= 0x8000;
+  if(StopBit) {
+	  Tmp |= 0x8000;
+  }
   if(RW) //read
 	  Tmp |= 0x806B0000;                            // Add start bit, stopdata ready, bit (1)
   else //write
