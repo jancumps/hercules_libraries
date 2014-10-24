@@ -1,7 +1,6 @@
 /dabort.asm
 /esm.c
 /het.c
-/notification.c
 /pinmux.c
 /sys_core.asm
 /sys_intvecs.asm
