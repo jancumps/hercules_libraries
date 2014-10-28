@@ -21,13 +21,13 @@
 #include "HET_IO_TEST.h"
 #include "HET_EMU.h"
 
-unsigned char *I2C1_txptr = NULL, *I2C1_rxptr = NULL, *I2C2_txptr = NULL, *I2C2_rxptr = NULL;
+unsigned char *I2C1_txptr = NULL, *I2C1_rxptr = NULL;
 unsigned char I2C1_TxData[5] = {0xA5,1,2,0x5A,0x1E};
-unsigned char I2C2_TxData[5] = {8,0x41,0x42,0x85,0x86};
-unsigned char I2C1_RxData[20], I2C2_RxData[20];
+unsigned char I2C1_RxData[20];
 unsigned int Data_Send_HET = 0, Data_Rece_HET = 0;
 unsigned int Data_Send_I2C = 0, Data_Rece_I2C = 0;
-unsigned int Stop_Rece_I2C = 0,Start_Repeat=0;
+// unsigned int Stop_Rece_I2C = 0;
+unsigned int Start_Repeat=0;
 char IntEna =1;
 char RW = 0; //write
 char I2C_ADDR; // todo: jc 20141024 this is a hack to make the TI emukator code work, candidate for refactoring
@@ -99,12 +99,9 @@ void main(void)
 	for (i=0;i<I2C_MSGSIZE;i++)
 	{
 		I2C1_RxData[i] = 0xff;
-		I2C2_RxData[i] = 0xff;
 	}
 	I2C1_txptr = I2C1_TxData;
 	I2C1_rxptr = I2C1_RxData;
-	I2C2_txptr = I2C2_TxData;
-	I2C2_rxptr = I2C2_RxData;
 
 	hetInit();
 	hetREG1->INTENAS = 0xFFFFFFFFU;	// todo jc 20141024 check if this is needed
@@ -113,17 +110,22 @@ void main(void)
 
 	 _enable_IRQ();	// todo jc 20141024 check if this is needed
 
+
+	 NumOfBytes = 1;
+	 I2C1_TxData[0] = 0x20; // % charge left
+
+
 	//test for master transmit mode
 	HetI2CPutAddr(I2C_ADDR, RW, NumOfBytes, IntEna, StopBit);
-	while(Stop_Rece_I2C == 0);//wait until master transmit completes.
-	Stop_Rece_I2C = 0;
+//	while(Stop_Rece_I2C == 0); //todo: this seems to be related wuith the genuine i2c peripheral, should be ignored
+//	Stop_Rece_I2C = 0; //todo: this seems to be related wuith the genuine i2c peripheral, should be ignored
 	for(wait_counter=0;wait_counter<0x18;wait_counter++); //wait some time.
 	//test for master receive mode
 	RW = 1; //Read
 	IntEna = 0;//no transmit interrupt
 	HetI2CPutAddr(I2C_ADDR, RW, NumOfBytes, IntEna, StopBit);
 	//I2C_MasterTransmitStart(I2C2_ADDR);
-
+/*
 	//test for repeated start mode
 	while(Stop_Rece_I2C == 0);//wait until master transmit completes.
 	Start_Repeat = 1;
@@ -133,7 +135,7 @@ void main(void)
 	StopBit = 0; //no stop bit for the first transfer
 	NumOfBytes = 2; //write 2 data, 1 repeat address, read 2 data
 	HetI2CPutAddr(I2C_ADDR, RW, NumOfBytes, IntEna, StopBit);
-
+*/
 	//i2cREG1->DXR = *I2C1_txptr++;
 	asm(" cpsie f");
 	while(1);
