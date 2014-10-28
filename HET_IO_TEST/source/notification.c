@@ -92,6 +92,8 @@ void edgeNotification(hetBASE_t * hetREG,uint32 edge)
 }
 
 /* USER CODE BEGIN (38) */
+
+extern char NumOfBytes;
 /* USER CODE END */
 #pragma WEAK(hetNotification)
 void hetNotification(hetBASE_t *het, uint32 offset)
@@ -102,7 +104,7 @@ void hetNotification(hetBASE_t *het, uint32 offset)
 	switch (vect)
     {
     case 11: /*--------------------------->      Transmit interrupt */
-    	if(Data_Send_HET<3)
+    	if(Data_Send_HET<NumOfBytes)		// jc 20141028 I replaced the magic number 3 with numOfBytes
     	{
     		HetI2CPutData(*I2C1_txptr++, IntEna);
     		Data_Send_HET++;
@@ -114,7 +116,7 @@ void hetNotification(hetBASE_t *het, uint32 offset)
     			HetI2CPutData(*I2C1_txptr++, IntEna);
     			Data_Send_HET++;
     		}
-    		else if(Data_Send_HET==5)
+    		else if(Data_Send_HET==5)	// todo jc 20141028 this magic numbr most likely needs to be replaced by a number that is related to the load
     		{
     			RW = 1; //Read
     			IntEna = 0;//no transmit interrupt
