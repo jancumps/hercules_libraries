@@ -83,8 +83,29 @@ void main(void)
 	*/
 
 	hetInit();
-	hetREG1->INTENAS = 0xFFFFFFFFU;	// todo jc 20141024 check if this is needed
-	hetREG1->GCR = 0x01010001;	// todo jc 20141024 check if this is needed
+
+	// should be replaced by setting the right bit, or enabling bit interrupts in HALCoGen
+	hetREG1->INTENAS = 0xFFFFFFFFU;	// todo jc 20141024 check if this is needed, Interrupt enable set register, I want to check if this can be done in HALCoGen (tab HET Edge Interrupts)
+	  /** - Setup control register
+	    *     - Enable output buffers
+	    *     - Ignore software breakpoints
+	    *     - Master or Slave Clock Mode
+	    *     - Enable HET
+	    */
+	hetREG1->GCR = 0x01010001;	// todo jc 20141024 check if this is needed, Global control register, I want to check if this can be done in HALCoGen
+
+
+
+	/* investigation of halcogen/het.c:
+	 * HET0 + 2 (sda and scl) output, default value 0
+	 * all edge triggers enabled (intenas)
+	 * HET0+2 pullup selected
+	 * HR clock: 11.429
+	 * LR loop time 699.974
+	 * interrupt priority levels high
+	 *
+	 *
+	 */
 
 	 _enable_IRQ();	// todo jc 20141024 check if this is needed
 
