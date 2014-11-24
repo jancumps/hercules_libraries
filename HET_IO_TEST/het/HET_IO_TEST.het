@@ -80,7 +80,7 @@ TimeOut6OCU   BR { next=Master_Start,cond_addr=SCL_SHFT,event=Z,irq=ON};
 ;State6CNT 	CNT     { reg = B, max= 2, irq = OFF,data=0} ;		
 ;Wait_Stat6 	BR {next = ShifReady, cond_addr= BitCNT, event=zero} ;
 ;ShifReady 	ECMP{next = Master_Start, cond_addr= ShiftBitIn, reg = B, en_pin_action = OFF, hr_lr=HIGH, pin = DUMMY_PIN1, data = 0x1, hr_data = 0}
-ShiftBitIn   SHFT { next=BitCNT,smode=ILL,cond_addr=BitCNT,cond=UNC,pin=0,reg=NONE,data=0};
+ShiftBitIn   SHFT { next=BitCNT,smode=ILL,cond_addr=BitCNT,cond=UNC,pin=SDA_PIN,reg=NONE,data=0};
  
 BitCNT	 	CNT { reg = B, max= 8, irq = OFF,data=0} ;8bits+1ACK
 ByteReady   BR { next=NextData,cond_addr=CleanRecDat,event=Z,irq=OFF};

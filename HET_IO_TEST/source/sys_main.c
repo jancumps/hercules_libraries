@@ -26,6 +26,8 @@ unsigned char I2C1_TxData[5] = {0, 0, 0, 0, 0};
 unsigned char I2C1_RxData[20];
 unsigned int Data_Send_HET = 0, Data_Rece_HET = 0;
 unsigned int Data_Send_I2C = 0, Data_Rece_I2C = 0;
+
+
 // unsigned int Stop_Rece_I2C = 0;
 unsigned int Start_Repeat=0;
 char IntEna =1;
@@ -65,6 +67,20 @@ void main(void)
 
 	I2C1_txptr = I2C1_TxData;
 	I2C1_rxptr = I2C1_RxData;
+
+
+	/* example to switch to other HET PORTS
+	HETPROGRAM0_UN * pHetProgram;
+
+	pHetProgram = (HETPROGRAM0_UN *) HET_INIT0_PST;
+
+	pHetProgram -> Program0_ST.State2_0.br.pin_select = 8; // scl
+	pHetProgram -> Program0_ST.State6_0.br.pin_select = 8; // scl
+	pHetProgram -> Program0_ST.ShiftBitIn_0.shft.pin_select = 10; // sda
+	pHetProgram -> Program0_ST.State9_0.br.pin_select = 8; // scl
+	pHetProgram -> Program0_ST.SCL_SHFT_0.shft.pin_select = 8; // scl
+	pHetProgram -> Program0_ST.SDA_SHFT_0.shft.pin_select = 10; // sda
+	*/
 
 	hetInit();
 	hetREG1->INTENAS = 0xFFFFFFFFU;	// todo jc 20141024 check if this is needed
