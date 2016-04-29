@@ -182,9 +182,9 @@ void setBacklight(bool flag) {
     // todo: think of something that makes sence with PWM - maybe replace flag with duty cycle?
 
     if (flag) {
-        etpwmREG6->CMPA = 550U;
-    } else {
-        etpwmREG6->CMPA = 0U;
+    	etpwmSetCmpA(etpwmREG6, 550U);
+    } else { // let's use the api unless there's a reason not to
+    	etpwmSetCmpA(etpwmREG6, 0U);
     }
 }
 
