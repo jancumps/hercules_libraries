@@ -72,5 +72,8 @@ void gText(uint16_t x0, uint16_t y0,
 
 void drawLogo();
 
+typedef void (*BacklightCallback)(bool function);
+void setBacklightCallback(BacklightCallback cb);
+
 
 #endif /* HX8353E_HX8353E_H_ */

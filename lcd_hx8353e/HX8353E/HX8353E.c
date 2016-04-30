@@ -22,7 +22,6 @@
 #include "HX8353E.h"
 #include "gio.h"
 #include "mibspi.h"
-#include "etpwm.h"
 #include "HX8353E_font_terminal.h"
 
 // ported from Screen_HX8353E
@@ -81,6 +80,9 @@ uint32_t _pinReset;      // the pin the signal line is on
 gioPORT_t *_portDataCommand; // the port the signal line is on
 uint32_t _pinDataCommand;      // the pin the signal line is on
 
+// only manage backlight if a function is registered
+BacklightCallback __backlightSet = NULL;
+
 
 void delay(uint32_t ms); // not making any fans here, am I?
 
@@ -126,8 +128,6 @@ void screenInit() {
 
     // I could move this to Begin(), because I'm doing more than initialising local variables
     gioInit();
-    etpwmInit();
-
 }
 
 void screenBegin() {
@@ -138,7 +138,6 @@ void screenBegin() {
      * In HalCoGen, on data format 0, I defined Baudrate 8000 kHz
      */
     mibspiInit();
-    etpwmStartTBCLK();
 
     gioSetBit(_portReset, _pinReset, 1);
     delay(100);
@@ -181,12 +180,16 @@ void screenBegin() {
 void setBacklight(bool flag) {
     // todo: think of something that makes sence with PWM - maybe replace flag with duty cycle?
 
-    if (flag) {
-    	etpwmSetCmpA(etpwmREG6, 550U);
-    } else { // let's use the api unless there's a reason not to
-    	etpwmSetCmpA(etpwmREG6, 0U);
-    }
+	if (__backlightSet) {
+		__backlightSet(flag);
+	}
 }
+
+
+void setBacklightCallback(BacklightCallback cb) {
+	__backlightSet = cb;
+}
+
 
 // ported from Screen_HX8353E
 void setOrientation(uint16_t orientation) {
