@@ -58,6 +58,10 @@ void point(uint16_t x1, uint16_t y1, uint16_t colour);
 void triangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, uint16_t colour);
 void invert(bool flag);
 
+// exposed these functions that are encapsulated in Screen_HX8353E
+void _setWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+void _writeData64(uint16_t *data);
+
 // ported from LCD_screen_font
 void setFontSize(uint32_t font);
 uint32_t fontMax();
@@ -70,7 +74,6 @@ void gText(uint16_t x0, uint16_t y0,
         uint16_t textColour, uint16_t backColour,
         uint32_t ix, uint32_t iy);
 
-void drawLogo();
 
 typedef void (*BacklightCallback)(bool function);
 void setBacklightCallback(BacklightCallback cb);

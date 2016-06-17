@@ -95,7 +95,6 @@ void _writeData88(uint16_t dataHigh16, uint16_t dataLow16);
 void _writeData8888(uint16_t dataHigh8, uint16_t dataLow8, uint16_t data8_3, uint16_t data8_4);
 void _fastFill(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t colour);
 void _setPoint(uint16_t x1, uint16_t y1, uint16_t colour);
-void _setWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 void _swapU(uint16_t *a, uint16_t *b);
 void _swapI(int16_t *a, int16_t *b);
 
@@ -862,5 +861,15 @@ void gText(uint16_t x0, uint16_t y0,
         }
     }
 }
+
+// ported from Screen_HX8353E
+void _writeData64(uint16_t *data) {
+    gioSetBit(_portDataCommand, _pinDataCommand, 1);
+    mibspiSetData(mibspiREG3, 2, &data[0]);
+    mibspiTransfer(mibspiREG3, 2 );
+    while(!(mibspiIsTransferComplete(mibspiREG3, 2))) {
+    }
+}
+
 
 
