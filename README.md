@@ -109,5 +109,12 @@ LCD VSS -> LP J3:2 (GND)
 LCD ~RW -> LP J3:2 (GND)
 LCD VDD -> LP J3:1 (5V)
 
+lcd_hx8353e
+===========
+
+Driver LIB for the LCD on the Educational BoosterPack MKII
+https://www.element14.com/community/people/jancumps/blog/2016/05/20/high-throughput-spi-traffic-part-2-spi-with-buffers
+
+
 
 
