@@ -871,5 +871,12 @@ void _writeData64(uint16_t *data) {
     }
 }
 
+void _writeData64DMA() {
+    gioSetBit(_portDataCommand, _pinDataCommand, 1);
+    mibspiTransfer(mibspiREG3, 2 );
+    while(!(mibspiIsTransferComplete(mibspiREG3, 2))) {
+    }
+}
+
 
 

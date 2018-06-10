@@ -9,6 +9,7 @@
 #define BITMAPUTILS_BITMAPUTILS_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 
  typedef struct {
@@ -21,6 +22,7 @@
 
 
 void drawBitmap(bitmap_t *bmp, uint32_t x, uint32_t y);
-void setBitmapInOneThrow(bitmap_t *bmp);
+void drawBitmapDMA(bitmap_t *bmp, uint32_t x, uint32_t y);
+void setBitmapInOneThrow(bitmap_t *bmp, bool bDMA);
 
 #endif /* BITMAPUTILS_BITMAPUTILS_H_ */
